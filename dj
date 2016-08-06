@@ -158,6 +158,7 @@ if [ ! -e $DJLIST ]; then
   chmod +x $DJBIN/$DJEXE
   $DJBIN/$DJEXE -i
   rm $DJEXE
+  echo "After creating a new bash instance you can use all commands."
 else
   if [[ $# == 0 ]]; then
     print_help
