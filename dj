@@ -154,9 +154,10 @@ shift $(($OPTIND - 1))
 if [ ! -e $DJLIST ]; then
   echo "Installing..."
   mkdir -p $DJBIN
-  cp $0 $DJBIN/$DJEXE
+  cp $DJEXE $DJBIN/$DJEXE
+  chmod +x $DJBIN/$DJEXE
   $DJBIN/$DJEXE -i
-  rm $0
+  rm $DJEXE
 else
   if [[ $# == 0 ]]; then
     print_help
