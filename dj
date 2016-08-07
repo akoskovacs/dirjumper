@@ -85,7 +85,7 @@ install_dirjumper () {
   echo -e "\t\tcd \$($0 -g \$1)\n\tfi\n}\n" >> $HOME/$SH_RC_FILE
   echo "All done."
   echo
-  echo "Now you can use 'ad -a <alias>' to add an alias for this directory."
+  echo "Now you can use '$DJEXE -a <alias>' to add an alias for this directory."
   echo "And then use 'j <alias>' to return here."
 }
 
