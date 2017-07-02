@@ -35,28 +35,64 @@ DJLIST="$DJPATH/$DJFILE"
 DJBIN="$DJPATH/bin"
 
 USAGE="Usage: $DJEXE -ardgihv args"
-VERSION="0.1.0"
+VERSION="0.1.1"
+
+COLOR_RED="\x1b[31m"
+COLOR_BLUE="\x1b[34m"
+COLOR_BBLUE="\x1b[1;34m"
+COLOR_PURPLE="\x1b[35m"
+COLOR_BPURPLE="\x1b[1;35m"
+COLOR_GREEN="\x1b[32m"
+COLOR_BGREEN="\x1b[1;32m"
+COLOR_YELLOW="\x1b[33m"
+COLOR_END="\x1b[0m"
 
 list_aliases () {
-  cat $DJLIST
+    # cat $DJLIST
+    local wd=`pwd`
+    while read line; do
+        local al=`echo $line | cut -d " " -f1`
+        local pth=`echo $line | cut -d " " -f2`
+        local pth_color=$COLOR_BBLUE
+        local pth_sel=" "
+        if [[ $pth == $wd ]]; then
+            pth_color=$COLOR_BGREEN
+            pth_sel="+" 
+        fi;
+        printf "$pth_color\t$pth_sel %s$END_COLOR\t$COLOR_PURPLE%s$END_COLOR\n" $al $pth
+    done < $DJLIST;
+}
+
+read_alias() {
+  egrep "\b$1\b" $DJLIST | rev | cut -d " " -f1 | rev
 }
 
 get_alias () {
-  egrep "\b$1\b" $DJLIST | rev | cut -d " " -f1 | rev
+  local al=`read_alias $1`
+  if [[ $al = "" ]]; then
+    echo -e "${COLOR_RED}Alias '$1' not found! $COLOR_END" >&2
+    echo "."
+  else
+    echo $al
+  fi;
 }
 
 add_alias () {
   DIRNAME=$2
-  if [[ $DIRNAME == "" ]]; then
+  if [[ $DIRNAME = "" ]]; then
+      echo -en $COLOR_YELLOW
       echo "No directory is given, using the current one '$(pwd)'."
+      echo -en $COLOR_END
       DIRNAME=$(pwd)
   fi
-  ODNAME=$(get_alias $1)
-  if [[ $ODNAME == "" ]]; then
+  ODNAME=`read_alias $1`
+  if [[ $ODNAME = "" ]]; then
     echo "$1 $DIRNAME" >> $DJLIST
     exit 0;
   else
+    echo -en $COLOR_RED
     echo "Alias '$1' is already exist for path '$ODNAME'!"
+    echo -en $COLOR_END
     echo "Use '$(basename $0) -r $1 <new-alias>' to rename it."
     exit 1;
   fi
@@ -64,13 +100,17 @@ add_alias () {
 
 rename_alias () {
   if [[ $2 == "" ]]; then
+    echo -en $COLOR_RED
     echo "You must give the alias a new name!"
+    echo -en $COLOR_END
     exit 1;
   fi
+  get_alias $1 >> /dev/null
   sed -i "s/\b$1\b/$2/" $DJLIST
 }
 
 delete_alias () {
+  get_alias $1 >> /dev/null
   sed -i "/\b$1\b/d" $DJLIST
 }
 
@@ -83,7 +123,9 @@ install_dirjumper () {
   echo "PATH=\"\$PATH:$DJBIN\"" >> $HOME/$SH_RC_FILE
   echo -e "$JMP_FN () {\n\tif [[ \$1 == \"\" ]]; then\n\t\t$0 -l\n\telse" >> $HOME/$SH_RC_FILE
   echo -e "\t\tcd \$($0 -g \$1)\n\tfi\n}\n" >> $HOME/$SH_RC_FILE
+  echo -e $COLOR_GREEN
   echo "All done."
+  echo -e $COLOR_END
   echo
   echo "Now you can use '$DJEXE -a <alias>' to add an alias for this directory."
   echo "And then use 'j <alias>' to return here."
@@ -118,6 +160,7 @@ while getopts "a:g:r:d:livh" optname
         ;;
       "d")
         delete_alias $OPTARG
+        exit 0;
         ;;
       "i")
         install_dirjumper
@@ -135,15 +178,21 @@ while getopts "a:g:r:d:livh" optname
         exit 0;
         ;;
       "?")
+        echo -en $COLOR_RED
         echo "Unknown option $OPTARG"
+        echo -en $COLOR_END
         exit 0;
         ;;
       ":")
+        echo -en $COLOR_RED
         echo "No argument value for option $OPTARG"
+        echo -en $COLOR_END
         exit 0;
         ;;
       *)
+        echo -en $COLOR_RED
         echo "Unknown error while processing options"
+        echo -en $COLOR_END
         exit 0;
         ;;
     esac
