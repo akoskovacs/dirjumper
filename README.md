@@ -71,7 +71,7 @@ $ cat $(dj -g apt)/official-package-repositories.list
 ```
 
 ## Living on the edge
-The script could automatically upgrade and downgrade itself using the `-u` and `-w` 
+The script can automatically upgrade and downgrade itself using the `-u` and `-w` 
 options respectively. For upgrades you have to have (of course) a stable internet 
 connection and `wget`.
 
