@@ -23,12 +23,20 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # ------------------------------------------------------------------
 
+## Stable, main update server
+REPO="https://raw.githubusercontent.com/akoskovacs/dirjumper/master"
+
+## Uncomment for upstream updates
+#REPO="https://raw.githubusercontent.com/akoskovacs/dirjumper/upstream"
+
+## Uncomment for local debugging
+#REPO="http://localhost:8000"
+
+
 SH_RC_FILE=".bashrc"
 DJEXE="dj"
 JMP_FN="j"
 DJFILE="dj.list"
-REPO="https://raw.githubusercontent.com/akoskovacs/dirjumper/master"
-#REPO="http://localhost:8000"
 
 DJDIR=".dirjumper"
 
@@ -138,7 +146,7 @@ install_dirjumper () {
 }
 
 update_dirjumper () {
-  echo -e "${COLOR_YELLOW}Checking for new version...${COLOR_END}"
+  echo -e "${COLOR_YELLOW}Checking for new version (current is v$VERSION)...${COLOR_END}"
 
   cd $DJBIN
   new_version=$(wget "$REPO/VERSION" -O- -o /tmp/dj.log)
