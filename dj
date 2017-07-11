@@ -55,7 +55,7 @@ list_aliases () {
         local pth=`echo $line | cut -d " " -f2`
         local pth_color=$COLOR_BBLUE
         local pth_sel=" "
-        if [[ $pth == $wd ]]; then
+        if [[ $pth = $wd ]]; then
             pth_color=$COLOR_BGREEN
             pth_sel="+" 
         fi;
@@ -85,6 +85,7 @@ add_alias () {
       echo -en $COLOR_END
       DIRNAME=$(pwd)
   fi
+  DIRNAME=`realpath $DIRNAME`
   ODNAME=`read_alias $1`
   if [[ $ODNAME = "" ]]; then
     echo "$1 $DIRNAME" >> $DJLIST
@@ -99,7 +100,7 @@ add_alias () {
 }
 
 rename_alias () {
-  if [[ $2 == "" ]]; then
+  if [[ $2 = "" ]]; then
     echo -en $COLOR_RED
     echo "You must give the alias a new name!"
     echo -en $COLOR_END
