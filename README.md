@@ -1,6 +1,7 @@
 # dirjumper
 
-Jump easly between frequently used directories, by assigning short aliases to them.
+Jump easly between frequently used directories, by assigning short aliases to them. The `upstream` branch contains
+the currently developed version, while the `master` branch holds the stable release.
 # Download and install
 Only a bash shell is needed. The current directory has to have read and write rights. Copy and execute one of these commands in your bash shell:
 ``` sh
@@ -27,9 +28,11 @@ $ dj -a apt /etc/apt/sources.list.d
 ## Jumping
 ``` sh
 $ j apt
-$ pwd     # => /etc/apt/sources.list.d
+$ pwd
+/etc/apt/sources.list.d
 $ j cu
-$ pwd     # => /var/log/cups
+$ pwd     
+/var/log/cups
 ```
 ## Listing out the aliases
 ``` sh
@@ -43,14 +46,17 @@ $ j # too easy
 The output will be, in both examples:
 
 ``` sh
-cu /var/log/cups
-apt /etc/apt/sources.list.d
+    cu   /var/log/cups
+    apt  /etc/apt/sources.list.d
 ```
+If your working directory has a known alias it will be preceded with a plus `+` sign
+ and its alias will be green.
 ## Renaming aliases
 ``` sh
 $ dj -r cu cps
 $ j cps
-$ pwd    # => /var/log/cups
+$ pwd
+/var/log/cups
 ```
 ## Deleting an alias
 ``` sh
@@ -62,6 +68,24 @@ And 'cps' is forgotten forever. :(
 ``` sh
 $ ls $(dj -g apt) # listing /etc/apt/sources.list.d
 $ cat $(dj -g apt)/official-package-repositories.list
+```
+
+## Living on the edge
+The script could automatically upgrade and downgrade itself using the `-u` and `-w` 
+options respectively. For upgrades you have to have (of course) a stable internet 
+connection and `wget`.
+
+### Upgrading
+``` sh
+$ dj -u
+Checking for new version...
+New version (v0.2.0) found. Do you want to upgrade? [y/N]: y
+Upgrade done...
+```
+### Downgrading (revoking upgrades)
+``` sh
+$ dj -w
+Sucessfully downgraded from '0.2.0' to '0.1.1'.
 ```
 
 # What is installed?
@@ -78,5 +102,3 @@ eval "$(/home/you/.dirjumper/bin/dj -s)"
 ```
 This code is needed, because `cd` is not a Unix executable, but command implemented **in** the shell.
 *(Yes, you can't implement it as an executable.)*
-
-`PATH` is also modified to accomodate the script.
