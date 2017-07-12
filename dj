@@ -156,7 +156,7 @@ update_dirjumper () {
       exit 1
   fi;
   if [ $VERSION = $new_version ]; then
-      echo -e "${COLOR_GREEN}Your version is up-to-date (v$VERSION).${COLOR_END}"
+      echo -e "${COLOR_GREEN}Your version is up-to-date.${COLOR_END}"
       exit 0
   fi;
   echo -ne "${COLOR_YELLOW}New version (v$new_version) found. Do you want to upgrade? [y/N]: ${COLOR_END}"
