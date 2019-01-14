@@ -5,11 +5,11 @@ the currently developed version, while the `master` branch holds the stable rele
 # Download and install
 Only a bash shell is needed. The current directory has to have read and write rights. Copy and execute one of these commands in your bash shell:
 ``` sh
-wget https://raw.githubusercontent.com/akoskovacs/dirjumper/master/dj.sh && bash dj.sh install
+wget https://raw.githubusercontent.com/akoskovacs/dirjumper/master/dj.sh && bash dj.sh install && rm dj.sh
 ```
 or, with curl
 ``` sh
-curl -sSL https://raw.githubusercontent.com/akoskovacs/dirjumper/master/dj.sh && bash dj.sh install
+curl -sSL https://raw.githubusercontent.com/akoskovacs/dirjumper/master/dj.sh && bash dj.sh install && rm dj.sh
 ```
 
 The downloaded script will be removed automatically from the current directory after the installation is completed.
