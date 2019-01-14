@@ -42,7 +42,7 @@ if [[ $DIRJUMPER_COLOR = '' ]]; then
     COLOR_BGREEN="\x1b[1;32m"
     COLOR_YELLOW="\x1b[33m"
     COLOR_GRAY="\x1b[30m"
-    COLOR_BGRAY="\x1b[1;30m"
+    COLOR_LGRAY="\x1b[37m"
     COLOR_END="\x1b[0m"
 fi
 
@@ -60,7 +60,7 @@ DJPATH="$HOME/$CONFDIR/$DJDIR"
 DJLIST="$DJPATH/$DJFILE"
 DJBIN="$DJPATH/$DJEXE"
 
-VERSION="0.4.0"
+VERSION="0.4.1"
 
 function dirjumper () {
     ## Stable, main update server
@@ -76,13 +76,13 @@ function dirjumper () {
 
     print_examples () {
         echo -e "Example usage:"
-        echo -e "$COLOR_GREEN $ $DIRJUMPER_ALIAS -a ex\t\t\t\t$COLOR_BGRAY# bookmarks the current directory as 'ex'$COLOR_END"
-        echo -e "$COLOR_GREEN $ $DIRJUMPER_ALIAS ex\t\t\t\t\t$COLOR_BGRAY# changes the directory to the bookmared 'ex' previously$COLOR_END"
-        echo -e "$COLOR_GREEN $ $DIRJUMPER_ALIAS -a ex /usr/lib/example\t\t$COLOR_BGRAY# bookmarks '/usr/lib/example' as 'ex'$COLOR_END"
-        echo -e "$COLOR_GREEN $ $DIRJUMPER_ALIAS -r ex e\t\t\t\t$COLOR_BGRAY# renames the alias 'ex' to 'e'$COLOR_END"
-        echo -e "$COLOR_GREEN $ $DIRJUMPER_ALIAS -d e\t\t\t\t$COLOR_BGRAY# delete 'e' permanently$COLOR_END"
+        echo -e "$COLOR_GREEN $ $DIRJUMPER_ALIAS -a ex\t\t\t\t$COLOR_LGRAY# bookmarks the current directory as 'ex'$COLOR_END"
+        echo -e "$COLOR_GREEN $ $DIRJUMPER_ALIAS ex\t\t\t\t\t$COLOR_LGRAY# changes the directory to the bookmared 'ex' previously$COLOR_END"
+        echo -e "$COLOR_GREEN $ $DIRJUMPER_ALIAS -a ex /usr/lib/example\t\t$COLOR_LGRAY# bookmarks '/usr/lib/example' as 'ex'$COLOR_END"
+        echo -e "$COLOR_GREEN $ $DIRJUMPER_ALIAS -r ex e\t\t\t\t$COLOR_LGRAY# renames the alias 'ex' to 'e'$COLOR_END"
+        echo -e "$COLOR_GREEN $ $DIRJUMPER_ALIAS -d e\t\t\t\t$COLOR_LGRAY# delete 'e' permanently$COLOR_END"
         echo
-        echo -e "${COLOR_BGRAY}You can also directly edit the list of aliases at:"
+        echo -e "${COLOR_LGRAY}You can also directly edit the list of aliases at:"
         echo -e "\t$DJLIST${COLOR_END}"
         echo
     }
@@ -260,7 +260,7 @@ function dirjumper () {
             fi
             chmod +x dj
             echo -e "${COLOR_GREEN}[+] Upgrade done...${COLOR_END}"
-            echo -e "${COLOR_BGRAY}[*] Open a new shell to apply changes...${COLOR_END}"
+            echo -e "${COLOR_LGRAY}[*] Open a new shell to apply changes...${COLOR_END}"
             rm /tmp/dj.log
         else
             echo -e "${COLOR_RED}[-] Upgrade aborted.${COLOR_END}"
@@ -368,14 +368,14 @@ install_dirjumper () {
     echo -e "source $DJBIN" >> $HOME/$SH_RC_FILE
     echo -e "# </dirjumper>" >> $HOME/$SH_RC_FILE
     echo -e "$COLOR_GREEN[+] All done. Start a new shell to apply changes...$COLOR_END"
-    echo -e "$COLOR_BGRAY[*] Now you can use '$DIRJUMPER_ALIAS -a <alias>' to add an alias for this directory."
+    echo -e "$COLOR_LGRAY[*] Now you can use '$DIRJUMPER_ALIAS -a <alias>' to add an alias for this directory."
     echo -e "[*] And then use '$DIRJUMPER_ALIAS <alias>' to return here."
     echo -e "[*] Use '$DIRJUMPER_ALIAS -h' to find out more... "
     echo -e $COLOR_END
 }
 
 ## Install when executed as a script with the '-i' option
-if [[ $1 = '-i' ]]; then
+if [[ $1 = 'install' ]]; then
     install_dirjumper
 fi
 
