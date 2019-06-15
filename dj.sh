@@ -364,6 +364,7 @@ install_dirjumper () {
     echo "[+] Creating '$DJLIST'..."
     touch $DJLIST
     echo "[+] Appending dirjump to '$SH_RC_FILE'..."
+    echo -e "" >> $HOME/$SH_RC_FILE
     echo -e "# <dirjumper>" >> $HOME/$SH_RC_FILE
     echo -e "source $DJBIN" >> $HOME/$SH_RC_FILE
     echo -e "# </dirjumper>" >> $HOME/$SH_RC_FILE
