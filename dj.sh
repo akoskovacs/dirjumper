@@ -60,7 +60,7 @@ DJPATH="$HOME/$CONFDIR/$DJDIR"
 DJLIST="$DJPATH/$DJFILE"
 DJBIN="$DJPATH/$DJEXE"
 
-VERSION="0.4.1"
+VERSION="0.4.2"
 
 function dirjumper () {
     ## Stable, main update server
@@ -83,7 +83,7 @@ function dirjumper () {
         echo -e "$COLOR_GREEN $ $DIRJUMPER_ALIAS -d e\t\t\t\t$COLOR_LGRAY# delete 'e' permanently$COLOR_END"
         echo
         echo -e "${COLOR_LGRAY}You can also directly edit the list of aliases at:"
-        echo -e "\t$DJLIST${COLOR_END}"
+        echo -e "\t'$DJLIST'${COLOR_END}"
         echo
     }
 
@@ -118,7 +118,7 @@ function dirjumper () {
 
     ## Format and color alias/directory list
     list_aliases () {
-        # cat $DJLIST
+        # cat "$DJLIST"
         local wd=`pwd`
         while read line; do
             local al=`echo $line | cut -d " " -f1`
@@ -132,16 +132,16 @@ function dirjumper () {
                 pth_sel="+" 
             fi
             printf "$pth_color\t$pth_sel %s$END_COLOR\t$COLOR_PURPLE%s$END_COLOR\n" $al $pth
-        done < $DJLIST
+        done < "$DJLIST"
     }
 
     ## Get the directory from the given alias
     read_alias () {
-        egrep "\b$1\b" $DJLIST | sort | cut -d " " -f2- | sort
+        egrep "\b$1\b" "$DJLIST" | sort | cut -d " " -f2- | sort
     }
 
     find_alias () {
-        egrep "\b$1\b" $DJLIST | sort | cut -d " " -f1 | sort
+        egrep "\b$1\b" "$DJLIST" | sort | cut -d " " -f1 | sort
     }
 
     get_alias() {
@@ -194,7 +194,7 @@ function dirjumper () {
         dname=`own_realpath $dname`
         local odname=`find_alias $1`
         if [[ $odname = "" ]]; then
-            echo "$1 $dname" >> $DJLIST
+            echo "$1 $dname" >> "$DJLIST"
         else
             echo -en $COLOR_RED
             echo "Alias '$1' is already exist for path '$odname'!"
@@ -219,7 +219,7 @@ function dirjumper () {
 
         local oname=`get_alias $1`
         if [[ $oname != "" ]]; then
-            sed -i "s/^\b$1\b/$2/" $DJLIST
+            sed -i "s/^\b$1\b/$2/" "$DJLIST"
         fi
     }
 
@@ -230,7 +230,7 @@ function dirjumper () {
         fi
         local oname=`get_alias $1`
         if [[ $oname != "" ]]; then
-            sed -i "/^\b$1\b/d" $DJLIST
+            sed -i "/^\b$1\b/d" "$DJLIST"
         fi
     }
 
@@ -247,6 +247,7 @@ function dirjumper () {
         fi
         if [ $VERSION = $new_version ]; then
             echo -e "${COLOR_GREEN}[+] Your version is up-to-date (v$VERSION)${COLOR_END}"
+            return 0
         fi
         echo -e "${COLOR_GREEN}[+] New version (v$new_version) found...${COLOR_END}"
         echo -ne "${COLOR_YELLOW}[?] Do you want to upgrade? [y/N]: ${COLOR_END}"
@@ -257,6 +258,7 @@ function dirjumper () {
             if [ $? -ne 0 ]; then
                 cat /tmp/dj.log
                 echo -e "${COLOR_RED}[!] Error while downloading upgrades!${COLOR_END}"
+                return 1
             fi
             chmod +x dj
             echo -e "${COLOR_GREEN}[+] Upgrade done...${COLOR_END}"
@@ -358,15 +360,15 @@ function dirjumper () {
 ## Creates the alias list and appends the init script after downloading
 install_dirjumper () {
     echo "[+] Creating installation directory '$DJPATH'..."
-    mkdir -p $DJPATH
+    mkdir -p "$DJPATH"
     echo "[+] Installing '$DJBIN'..."
-    cp $0 $DJBIN
+    cp "$0" "$DJBIN"
     echo "[+] Creating '$DJLIST'..."
-    touch $DJLIST
+    touch "$DJLIST"
     echo "[+] Appending dirjump to '$SH_RC_FILE'..."
-    echo -e "# <dirjumper>" >> $HOME/$SH_RC_FILE
-    echo -e "source $DJBIN" >> $HOME/$SH_RC_FILE
-    echo -e "# </dirjumper>" >> $HOME/$SH_RC_FILE
+    echo -e "# <dirjumper>" >> "$HOME/$SH_RC_FILE"
+    echo -e "source \"$DJBIN\"" >> "$HOME/$SH_RC_FILE"
+    echo -e "# </dirjumper>" >> "$HOME/$SH_RC_FILE"
     echo -e "$COLOR_GREEN[+] All done. Start a new shell to apply changes...$COLOR_END"
     echo -e "$COLOR_LGRAY[*] Now you can use '$DIRJUMPER_ALIAS -a <alias>' to add an alias for this directory."
     echo -e "[*] And then use '$DIRJUMPER_ALIAS <alias>' to return here."
