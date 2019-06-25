@@ -247,6 +247,7 @@ function dirjumper () {
         fi
         if [ $VERSION = $new_version ]; then
             echo -e "${COLOR_GREEN}[+] Your version is up-to-date (v$VERSION)${COLOR_END}"
+            return 0
         fi
         echo -e "${COLOR_GREEN}[+] New version (v$new_version) found...${COLOR_END}"
         echo -ne "${COLOR_YELLOW}[?] Do you want to upgrade? [y/N]: ${COLOR_END}"
@@ -257,6 +258,7 @@ function dirjumper () {
             if [ $? -ne 0 ]; then
                 cat /tmp/dj.log
                 echo -e "${COLOR_RED}[!] Error while downloading upgrades!${COLOR_END}"
+                return 1
             fi
             chmod +x dj
             echo -e "${COLOR_GREEN}[+] Upgrade done...${COLOR_END}"
