@@ -3,16 +3,22 @@
 Jump easly between frequently used directories, by bookmarking them with short aliases. The `upstream` branch contains
 the currently developed version, while the `master` branch holds the stable release.
 # Download and install
-Only a bash shell is needed. The current directory has to have read and write rights. Copy and execute one of these commands in your bash shell:
+Only a bash shell is needed. The current directory has to have read and write rights. Copy and execute one of these commands in your bash shell, while being in a writable directory:
 ``` sh
 wget https://raw.githubusercontent.com/akoskovacs/dirjumper/master/dj.sh && bash dj.sh install && rm dj.sh
 ```
 or, with curl
 ``` sh
-curl -sSL https://raw.githubusercontent.com/akoskovacs/dirjumper/master/dj.sh && bash dj.sh install && rm dj.sh
+curl -sSL https://raw.githubusercontent.com/akoskovacs/dirjumper/master/dj.sh > dj.sh && bash dj.sh install && rm dj.sh
+```
+__This will also work on Windows if a GNU-type command line environment is present, but sometimes you still have to create your
+own ~/.bashrc manually if it does not exist, by running:__
+```sh
+$ touch ~/.bashrc
 ```
 
 The downloaded script will be removed automatically from the current directory after the installation is completed.
+
 # Usage
 ## Adding a new alias for the current directory
 ``` sh
