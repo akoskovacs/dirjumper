@@ -52,15 +52,17 @@ SH_RC_FILE=".bashrc"
 CONFDIR=".config"
 
 DJEXE="dj.sh"
+DJEXE_OLD="dj.sh.old"
 DJFILE="dj.list"
-
+DJLOG="/tmp/dj.log"
+ 
 DJDIR=".dirjumper"
 DJPATH="$HOME/$CONFDIR/$DJDIR"
 
 DJLIST="$DJPATH/$DJFILE"
 DJBIN="$DJPATH/$DJEXE"
 
-VERSION="0.4.2"
+VERSION="0.4.3"
 
 function dirjumper () {
     ## Stable, main update server
@@ -184,7 +186,7 @@ function dirjumper () {
         if [[ $? -ne 0 ]]; then
             return 1
         fi
-            
+           
         if [[ $dname = "" ]]; then
             dname=`pwd`
             echo -en $COLOR_YELLOW
@@ -239,9 +241,9 @@ function dirjumper () {
         echo -e "${COLOR_YELLOW}[+] Checking for new version (current is v$VERSION)...${COLOR_END}"
 
         cd $DJPATH
-        new_version=$(wget "$REPO/VERSION" -O- -o /tmp/dj.log)
-        if [ $? -ne 0 ]; then 
-            cat /tmp/dj.log
+        new_version=$(wget "$REPO/VERSION" -O- -o $DJLOG)
+        if [ $? -ne 0 ]; then
+            cat $DJLOG
             echo -e "${COLOR_RED}[!] Error while downloading version information!${COLOR_END}"
             return 1
         fi
@@ -253,17 +255,16 @@ function dirjumper () {
         echo -ne "${COLOR_YELLOW}[?] Do you want to upgrade? [y/N]: ${COLOR_END}"
         read answ
         if [ $answ = "y" -o $answ = "Y" ]; then
-            mv dj dj.old
-            wget "$REPO/dj" -o/tmp/dj.log
+            mv $DJEXE $DJEXE_OLD
+            wget -o $DJLOG -O "$DJPATH/$DJEXE" "$REPO/$DJEXE"  
             if [ $? -ne 0 ]; then
-                cat /tmp/dj.log
+                cat $DJLOG
                 echo -e "${COLOR_RED}[!] Error while downloading upgrades!${COLOR_END}"
-                return 1
+                rm $DJEXE
             fi
-            chmod +x dj
+            chmod +x $DJEXE
             echo -e "${COLOR_GREEN}[+] Upgrade done...${COLOR_END}"
             echo -e "${COLOR_LGRAY}[*] Open a new shell to apply changes...${COLOR_END}"
-            rm /tmp/dj.log
         else
             echo -e "${COLOR_RED}[-] Upgrade aborted.${COLOR_END}"
         fi
@@ -272,11 +273,11 @@ function dirjumper () {
     ## Restore and older version
     downgrade_dirjumper () {
         cd $DJPATH
-        if [ -e dj.old ]; then
-            old_version=$(./dj.old -v)
-            mv dj dj.older
-            mv dj.old dj
-            mv dj.older dj.old
+        if [ -e $DJEXE_OLD ]; then
+            old_version=$(./$DJEXE_OLD -v)
+            mv $DJEXE dj.older
+            mv $DJEXE_OLD $DJEXE
+            mv dj.older $DJEXE_OLD
             echo -e "${COLOR_GREEN}[+] Sucessfully downgraded from '${old_version}' to '${VERSION}'.${COLOR_END}"
         else
             echo -e "${COLOR_RED}[!] No older version found!${COLOR_END}"
