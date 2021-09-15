@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ------------------------------------------------------------------
-# Copyleft (C) Ákos Kovács - 2019
+# Copyleft (C) Ákos Kovács - 2020
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -62,7 +62,7 @@ DJPATH="$HOME/$CONFDIR/$DJDIR"
 DJLIST="$DJPATH/$DJFILE"
 DJBIN="$DJPATH/$DJEXE"
 
-VERSION="0.4.3"
+VERSION="0.4.4"
 
 function dirjumper () {
     ## Stable, main update server
@@ -133,17 +133,17 @@ function dirjumper () {
                 pth_color=$COLOR_BGREEN
                 pth_sel="+" 
             fi
-            printf "$pth_color\t$pth_sel %s$END_COLOR\t$COLOR_PURPLE%s$END_COLOR\n" $al $pth
+            printf "$pth_color\t$pth_sel %s$END_COLOR\t$COLOR_PURPLE%s$END_COLOR\n" $al $pth $END_COLOR
         done < "$DJLIST"
     }
 
     ## Get the directory from the given alias
     read_alias () {
-        egrep "\b$1\b" "$DJLIST" | sort | cut -d " " -f2- | sort
+        egrep "\b$1\b" "$DJLIST" | sort | cut -d " " -f2- | sort | head -1
     }
 
     find_alias () {
-        egrep "\b$1\b" "$DJLIST" | sort | cut -d " " -f1 | sort
+        egrep "\b$1\b" "$DJLIST" | sort | cut -d " " -f1 | sort | head -1
     }
 
     get_alias() {
