@@ -133,7 +133,7 @@ function dirjumper () {
                 pth_color=$COLOR_BGREEN
                 pth_sel="+" 
             fi
-            printf "$pth_color\t$pth_sel %s$END_COLOR\t$COLOR_PURPLE%s$END_COLOR\n" $al $pth
+            printf "$pth_color\t$pth_sel %s$END_COLOR\t$COLOR_PURPLE%s$END_COLOR\n" $al $pth $END_COLOR
         done < "$DJLIST"
     }
 
