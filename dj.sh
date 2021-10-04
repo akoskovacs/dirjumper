@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ------------------------------------------------------------------
-# Copyleft (C) Ákos Kovács - 2020
+# Copyleft (C) Ákos Kovács - 2021
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -62,7 +62,7 @@ DJPATH="$HOME/$CONFDIR/$DJDIR"
 DJLIST="$DJPATH/$DJFILE"
 DJBIN="$DJPATH/$DJEXE"
 
-VERSION="0.4.4"
+VERSION="0.5.0"
 
 function dirjumper () {
     ## Stable, main update server
@@ -90,11 +90,12 @@ function dirjumper () {
     }
 
     print_help () {
-        echo -e "Usage: $COLOR_BBLUE$DIRJUMPER_ALIAS -ardghv [<ARGS>]$COLOR_END"
+        echo -e "Usage: $COLOR_BBLUE$DIRJUMPER_ALIAS -ardgeliuwhv [<ARGS>]$COLOR_END"
         echo -e "\t$COLOR_BLUE-a <ALIAS> [<DIR>]$COLOR_END\t\tAdd an alias, use the working dir. if <DIR> is not set"
         echo -e "\t$COLOR_BLUE-r <OLD-ALIAS> <NEW-ALIAS>$COLOR_END\tRename a directory alias"
         echo -e "\t$COLOR_BLUE-d <ALIAS>$COLOR_END\t\t\tDelete a directory alias"
         echo -e "\t$COLOR_BLUE-g <ALIAS>$COLOR_END\t\t\tGet the full path for an alias"
+        echo -e "\t$COLOR_BLUE-e$COLOR_END\t\t\t\tEdit alias list file with the default editor"
         echo -e "\t$COLOR_BLUE-l$COLOR_END\t\t\t\tList all aliases\n"
         echo -e "\t$COLOR_BLUE-u$COLOR_END\t\t\t\tUpgrade the script to the latest version"
         echo -e "\t$COLOR_BLUE-w$COLOR_END\t\t\t\tDowngrade the script to an older version\n"
@@ -133,17 +134,18 @@ function dirjumper () {
                 pth_color=$COLOR_BGREEN
                 pth_sel="+" 
             fi
-            printf "$pth_color\t$pth_sel %s$END_COLOR\t$COLOR_PURPLE%s$END_COLOR\n" $al $pth $END_COLOR
+            printf "$pth_color\t$pth_sel %s$END_COLOR\t$COLOR_PURPLE%s$END_COLOR\n" $al $pth
         done < "$DJLIST"
+        echo -ne "$COLOR_END"
     }
 
     ## Get the directory from the given alias
     read_alias () {
-        egrep "\b$1\b" "$DJLIST" | sort | cut -d " " -f2- | sort | head -1
+        egrep "^\b$1\b" "$DJLIST" | sort | cut -d " " -f2- | sort
     }
 
     find_alias () {
-        egrep "\b$1\b" "$DJLIST" | sort | cut -d " " -f1 | sort | head -1
+        egrep "^\b$1\b" "$DJLIST" | sort | cut -d " " -f1 | sort
     }
 
     get_alias() {
@@ -284,8 +286,18 @@ function dirjumper () {
         fi
     }
 
+    edit_aliases () {
+        echo -e "Opening $DJLIST for editing..."
+        if [ ! -z $EDITOR ]; then
+            $EDITOR $DJLIST
+        else
+            echo -e "${COLOR_YELLOW}No \$EDITOR is set. Attempting to use nano${COLOR_END}..."
+            nano $DJLIST
+        fi
+    }
+
     ## main entry point
-    while getopts "a:r:d:g:liuwsvh" optname; do
+    while getopts "a:r:d:g:lieuwsvh" optname; do
         case "${optname}" in
             "v")
                 echo $VERSION
@@ -307,6 +319,9 @@ function dirjumper () {
                 ;;
             "l")
                 list_aliases
+                ;;
+            "e")
+                edit_aliases
                 ;;
             "u")
                 update_dirjumper
@@ -356,6 +371,7 @@ function dirjumper () {
     unset -f delete_alias
     unset -f update_dirjumper
     unset -f downgrade_dirjumper
+    unset -f edit_aliases
 }
 
 ## Creates the alias list and appends the init script after downloading
