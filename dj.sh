@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ------------------------------------------------------------------
-# Copyleft (C) Ákos Kovács - 2021
+# Copyleft (C) Ákos Kovács - 2022
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -62,7 +62,7 @@ DJPATH="$HOME/$CONFDIR/$DJDIR"
 DJLIST="$DJPATH/$DJFILE"
 DJBIN="$DJPATH/$DJEXE"
 
-VERSION="0.5.0"
+VERSION="0.5.1"
 
 function dirjumper () {
     ## Stable, main update server
@@ -351,7 +351,7 @@ function dirjumper () {
     fi
 
     ## No args, so print the whole list
-    if [[( $# -eq 0 ) && ( $OPTIND -eq 1 )]]; then
+    if [[ ( $# -eq 0 ) && ( $OPTIND -eq 1 ) ]]; then
         list_aliases
     fi
 
