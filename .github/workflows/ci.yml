@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [master, upstream]
+  pull_request:
+    branches: [master, upstream]
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        shell: [bash, zsh]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install zsh
+        if: matrix.shell == 'zsh' && runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y zsh
+
+      - name: Run tests
+        run: ${{ matrix.shell }} tests/test_dj.sh
