@@ -62,7 +62,7 @@ DJPATH="$HOME/$CONFDIR/$DJDIR"
 DJLIST="$DJPATH/$DJFILE"
 DJBIN="$DJPATH/$DJEXE"
 
-VERSION="0.5.1"
+VERSION="0.6.0"
 
 function dirjumper () {
     ## Stable, main update server
@@ -223,7 +223,8 @@ function dirjumper () {
 
         local oname=`get_alias $1`
         if [[ $oname != "" ]]; then
-            sed -i "s/^\b$1\b/$2/" "$DJLIST"
+            local tmpf=$(mktemp)
+            sed "s/^$1 /$2 /" "$DJLIST" > "$tmpf" && mv "$tmpf" "$DJLIST"
         fi
     }
 
@@ -234,7 +235,8 @@ function dirjumper () {
         fi
         local oname=`get_alias $1`
         if [[ $oname != "" ]]; then
-            sed -i "/^\b$1\b/d" "$DJLIST"
+            local tmpf=$(mktemp)
+            sed "/^$1 /d" "$DJLIST" > "$tmpf" && mv "$tmpf" "$DJLIST"
         fi
     }
 
