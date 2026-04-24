@@ -62,7 +62,7 @@ DJPATH="$HOME/$CONFDIR/$DJDIR"
 DJLIST="$DJPATH/$DJFILE"
 DJBIN="$DJPATH/$DJEXE"
 
-VERSION="2.0.0"
+VERSION="2.0.2"
 
 function dirjumper () {
     ## Stable, main update server
@@ -396,10 +396,14 @@ install_dirjumper () {
     cp "$0" "$DJBIN"
     echo "[+] Creating '$DJLIST'..."
     touch "$DJLIST"
-    echo "[+] Appending dirjump to '$SH_RC_FILE'..."
-    echo -e "# <dirjumper>" >> "$HOME/$SH_RC_FILE"
-    echo -e "source \"$DJBIN\"" >> "$HOME/$SH_RC_FILE"
-    echo -e "# </dirjumper>" >> "$HOME/$SH_RC_FILE"
+    if ! grep -q '# <dirjumper>' "$HOME/$SH_RC_FILE" 2>/dev/null; then
+        echo "[+] Appending dirjump to '$SH_RC_FILE'..."
+        echo -e "# <dirjumper>" >> "$HOME/$SH_RC_FILE"
+        echo -e "source \"$DJBIN\"" >> "$HOME/$SH_RC_FILE"
+        echo -e "# </dirjumper>" >> "$HOME/$SH_RC_FILE"
+    else
+        echo "[*] '$SH_RC_FILE' already configured, skipping..."
+    fi
     echo -e "$COLOR_GREEN[+] All done. Start a new shell to apply changes...$COLOR_END"
     echo -e "$COLOR_LGRAY[*] Now you can use '$DIRJUMPER_ALIAS -a <alias>' to add an alias for this directory."
     echo -e "[*] And then use '$DIRJUMPER_ALIAS <alias>' to return here."
