@@ -1,0 +1,80 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version bump type"
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: upstream
+
+      - name: Bump version
+        id: bump
+        run: |
+          OLD_VERSION=$(cat VERSION)
+          IFS='.' read -r major minor patch <<< "$OLD_VERSION"
+
+          case "${{ inputs.bump }}" in
+            major) major=$((major + 1)); minor=0; patch=0 ;;
+            minor) minor=$((minor + 1)); patch=0 ;;
+            patch) patch=$((patch + 1)) ;;
+          esac
+
+          NEW_VERSION="${major}.${minor}.${patch}"
+          echo "$NEW_VERSION" > VERSION
+          sed -i "s/^VERSION=\"${OLD_VERSION}\"/VERSION=\"${NEW_VERSION}\"/" dj.sh
+
+          echo "old_version=$OLD_VERSION" >> "$GITHUB_OUTPUT"
+          echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Verify version sync
+        run: |
+          FILE_VERSION=$(cat VERSION)
+          SCRIPT_VERSION=$(grep -oP '^VERSION="\K[^"]+' dj.sh)
+          if [ "$FILE_VERSION" != "$SCRIPT_VERSION" ]; then
+            echo "::error::Version mismatch: VERSION=$FILE_VERSION, dj.sh=$SCRIPT_VERSION"
+            exit 1
+          fi
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add VERSION dj.sh
+          git commit -m "Bump version to v${{ steps.bump.outputs.new_version }}"
+          git push origin upstream
+
+      - name: Create PR to master
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_VERSION: ${{ steps.bump.outputs.new_version }}
+          OLD_VERSION: ${{ steps.bump.outputs.old_version }}
+          BUMP_TYPE: ${{ inputs.bump }}
+        run: |
+          BODY="## Release v${NEW_VERSION}
+
+          Bumped from v${OLD_VERSION} → v${NEW_VERSION} (${BUMP_TYPE}).
+
+          Merging this PR will automatically create a GitHub release with tag \`v${NEW_VERSION}\`."
+
+          gh pr create \
+            --base master \
+            --head upstream \
+            --title "Release v${NEW_VERSION}" \
+            --body "$BODY"
