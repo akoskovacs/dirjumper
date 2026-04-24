@@ -1,8 +1,9 @@
-# dirjumper
+# :rocket: dirjumper
 
 Jump easly between frequently used directories, by bookmarking them with short aliases. The `upstream` branch contains
 the currently developed version, while the `master` branch holds the stable release.
-# Download and install
+
+# :package: Download and install
 Only a bash shell is needed. The current directory has to have read and write rights. Copy and execute one of these commands in your bash shell, while being in a writable directory:
 ``` sh
 wget https://raw.githubusercontent.com/akoskovacs/dirjumper/master/dj.sh && bash dj.sh install && rm dj.sh
@@ -19,19 +20,19 @@ $ touch ~/.bashrc
 
 The downloaded script will be removed automatically from the current directory after the installation is completed.
 
-# Usage
-## Adding a new alias for the current directory
+# :wrench: Usage
+## :heavy_plus_sign: Adding a new alias for the current directory
 ``` sh
 $ cd /var/log/cups
 $ j -a cu
 ```
 The current directory is now available with the alias 'cu'.
 
-## Adding an arbitrary directory (from anywhere)
+## :file_folder: Adding an arbitrary directory (from anywhere)
 ``` sh
 $ j -a apt /etc/apt/sources.list.d
 ```
-## Jumping
+## :zap: Jumping
 ``` sh
 $ j apt
 $ pwd
@@ -40,7 +41,7 @@ $ j cu
 $ pwd     
 /var/log/cups
 ```
-## Listing out the aliases
+## :clipboard: Listing out the aliases
 ``` sh
 $ j 
 ```
@@ -52,31 +53,31 @@ You will get this output:
 ```
 If your working directory has a known alias it will be preceded with a plus `+` sign
  and its alias will be green.
-## Renaming aliases
+## :pencil2: Renaming aliases
 ``` sh
 $ j -r cu cps
 $ j cps
 $ pwd
 /var/log/cups
 ```
-## Deleting an alias
+## :wastebasket: Deleting an alias
 ``` sh
 $ j -d cps
 ```
-And 'cps' is forgotten forever. :(
+And 'cps' is forgotten forever. :cry:
 
-## Using the directory in a regular command
+## :hammer_and_wrench: Using the directory in a regular command
 ``` sh
 $ ls $(j -g apt) # listing /etc/apt/sources.list.d
 $ cat $(j -g apt)/official-package-repositories.list
 ```
 
-## Living on the edge
+## :fire: Living on the edge
 The script can automatically upgrade and downgrade itself using the `-u` and `-w` 
 options respectively. For upgrades you have to have (of course) a stable internet 
 connection and `wget`.
 
-### Upgrading
+### :arrow_up: Upgrading
 ``` sh
 $ j -u
 [+] Checking for new version (current is v0.4.0)...
@@ -84,13 +85,13 @@ $ j -u
 [?] Do you want to upgrade? [y/N]: y
     ...
 ```
-### Downgrading (revoking upgrades)
+### :arrow_down: Downgrading (revoking upgrades)
 ``` sh
 $ j -w
 [+] Sucessfully downgraded from '0.2.0' to '0.1.1'.
 ```
 
-# What is installed?
+# :open_file_folder: What is installed?
 By default, the script copies itself to the `$HOME/.config/.dirjumper`. The `.dirjumper`
 directory contains the script and the `dj.list` file 
 where the aliases are assigned. *These are not to be confused with shell aliases, which are a built-in way for aliasing commands.*
@@ -105,7 +106,7 @@ source /home/akos/.config/.dirjumper/dj.sh
 The dirjumper "tags" are used as separators, so later versions
 could safely modify its inner contents.
 
-# Configuration
+# :gear: Configuration
 You have some limited configuration options in the current version of
 `dirjumper`.
 
