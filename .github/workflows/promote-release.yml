@@ -11,7 +11,7 @@ permissions:
 jobs:
   open-master-pr:
     runs-on: ubuntu-latest
-    if: startsWith(github.event.head_commit.message, 'Bump version to v')
+    if: startsWith(github.event.head_commit.message, 'Bump version to v') || contains(github.event.head_commit.message, '/release/v')
     steps:
       - uses: actions/checkout@v4
 
