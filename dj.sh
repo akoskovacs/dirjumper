@@ -121,22 +121,29 @@ function dirjumper () {
 
     ## Format and color alias/directory list
     list_aliases () {
-        # cat "$DJLIST"
         local wd=`pwd`
+        local max_len=0
+
+        # First pass: find the longest alias name for column alignment
+        while read line; do
+            local al=`echo $line | cut -d " " -f1`
+            [[ ${#al} -gt $max_len ]] && max_len=${#al}
+        done < "$DJLIST"
+
+        # Second pass: print with consistent padding
         while read line; do
             local al=`echo $line | cut -d " " -f1`
             local pth=`echo $line | cut -d " " -f2-`
             local pth_color=$COLOR_BBLUE
             local pth_sel=" "
-            # If the current working directory is something we have 
+            # If the current working directory is something we have
             # an alias for make it known
             if [[ $pth = $wd ]]; then
                 pth_color=$COLOR_BGREEN
-                pth_sel="+" 
+                pth_sel="+"
             fi
-            printf "$pth_color\t$pth_sel %s$END_COLOR\t$COLOR_PURPLE%s$END_COLOR\n" $al $pth
+            printf "${pth_color}\t${pth_sel} %-${max_len}s  ${COLOR_END}${COLOR_PURPLE}%s${COLOR_END}\n" "$al" "$pth"
         done < "$DJLIST"
-        echo -ne "$COLOR_END"
     }
 
     ## Get the directory from the given alias
@@ -306,9 +313,14 @@ function dirjumper () {
                 ;;
             "a")
                 add_alias $OPTARG ${@:$OPTIND:1}
+                # Consume the optional directory argument so the post-loop
+                # code doesn't mistake it for an alias to jump to
+                [[ -n "${@:$OPTIND:1}" ]] && OPTIND=$((OPTIND + 1))
                 ;;
             "r")
                 rename_alias $OPTARG ${@:$OPTIND:1}
+                # Consume the required new-name argument for the same reason
+                OPTIND=$((OPTIND + 1))
                 ;;
             "d")
                 delete_alias $OPTARG

@@ -2,11 +2,7 @@
 
 Tired of typing long paths or hunting through `cd` history? **dirjumper** lets you bookmark any directory with a short alias and jump to it instantly from anywhere.
 
-```sh
-$ j apt          # jumps to /etc/apt/sources.list.d
-$ j logs         # jumps to /var/log/nginx
-$ j proj         # jumps to ~/projects/my-app
-```
+![dirjumper demo](docs/demo.gif)
 
 > The `upstream` branch contains the currently developed version, while the `master` branch holds the stable release.
 
@@ -135,7 +131,7 @@ dirjumper can upgrade and downgrade itself using the `-u` and `-w` options. Upgr
 ```sh
 $ j -u
 [+] Checking for new version (current is v0.4.0)...
-[+] New version (v10.5.0) found...
+[+] New version (v1.1.0) found...
 [?] Do you want to upgrade? [y/N]: y
     ...
 ```
