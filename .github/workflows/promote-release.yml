@@ -1,0 +1,34 @@
+name: Promote Release
+
+on:
+  push:
+    branches: [upstream]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  open-master-pr:
+    runs-on: ubuntu-latest
+    if: startsWith(github.event.head_commit.message, 'Bump version to v')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version
+        id: version
+        run: echo "version=$(cat VERSION)" >> "$GITHUB_OUTPUT"
+
+      - name: Open PR to master
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          gh pr create \
+            --base master \
+            --head upstream \
+            --title "Release v${VERSION}" \
+            --body "$(cat <<EOF
+          Merging this PR will automatically create a GitHub release with tag \`v${VERSION}\`.
+          EOF
+          )" || echo "PR already exists or no diff — skipping."
