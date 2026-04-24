@@ -1,134 +1,209 @@
-# dirjumper
+# :rocket: dirjumper
 
-Jump easly between frequently used directories, by bookmarking them with short aliases. The `upstream` branch contains
-the currently developed version, while the `master` branch holds the stable release.
-# Download and install
-Only a bash shell is needed. The current directory has to have read and write rights. Copy and execute one of these commands in your bash shell, while being in a writable directory:
-``` sh
+Tired of typing long paths or hunting through `cd` history? **dirjumper** lets you bookmark any directory with a short alias and jump to it instantly from anywhere.
+
+```sh
+$ j apt          # jumps to /etc/apt/sources.list.d
+$ j logs         # jumps to /var/log/nginx
+$ j proj         # jumps to ~/projects/my-app
+```
+
+> The `upstream` branch contains the currently developed version, while the `master` branch holds the stable release.
+
+---
+
+## :clipboard: Table of Contents
+
+- [:package: Installation](#package-installation)
+- [:wrench: Usage](#wrench-usage)
+  - [Add an alias](#heavy_plus_sign-adding-a-new-alias-for-the-current-directory)
+  - [Jump](#zap-jumping)
+  - [List aliases](#bar_chart-listing-out-the-aliases)
+  - [Rename an alias](#pencil2-renaming-aliases)
+  - [Delete an alias](#wastebasket-deleting-an-alias)
+  - [Use in commands](#hammer_and_wrench-using-the-directory-in-a-regular-command)
+  - [Upgrade / Downgrade](#fire-living-on-the-edge)
+- [:open_file_folder: What is installed?](#open_file_folder-what-is-installed)
+- [:gear: Configuration](#gear-configuration)
+- [:blue_book: Quick reference](#blue_book-quick-reference)
+
+---
+
+## :package: Installation
+
+**Requirements:** bash shell with read/write access to the current directory. `wget` or `curl` must be available.
+
+Run one of the following in a writable directory:
+
+**With wget:**
+```sh
 wget https://raw.githubusercontent.com/akoskovacs/dirjumper/master/dj.sh && bash dj.sh install && rm dj.sh
 ```
-or, with curl
-``` sh
+
+**With curl:**
+```sh
 curl -sSL https://raw.githubusercontent.com/akoskovacs/dirjumper/master/dj.sh > dj.sh && bash dj.sh install && rm dj.sh
 ```
-__This will also work on Windows if a GNU-type command line environment is present, but sometimes you still have to create your
-own ~/.bashrc manually if it does not exist, by running:__
+
+The installer will set everything up and clean up after itself automatically.
+
+> :information_source: **Windows:** This also works in GNU-type environments (e.g. Git Bash, WSL). If `~/.bashrc` does not exist yet, create it first:
+> ```sh
+> touch ~/.bashrc
+> ```
+
+---
+
+## :wrench: Usage
+
+### :heavy_plus_sign: Adding a new alias for the current directory
+
+Navigate to the directory you want to bookmark, then add an alias:
+
 ```sh
-$ touch ~/.bashrc
-```
-
-The downloaded script will be removed automatically from the current directory after the installation is completed.
-
-# Usage
-## Adding a new alias for the current directory
-``` sh
 $ cd /var/log/cups
 $ j -a cu
 ```
-The current directory is now available with the alias 'cu'.
 
-## Adding an arbitrary directory (from anywhere)
-``` sh
+The current directory is now bookmarked as `cu`.
+
+### :file_folder: Adding an alias for an arbitrary directory
+
+You can also bookmark any path without navigating to it first:
+
+```sh
 $ j -a apt /etc/apt/sources.list.d
 ```
-## Jumping
-``` sh
+
+### :zap: Jumping
+
+```sh
 $ j apt
 $ pwd
 /etc/apt/sources.list.d
 $ j cu
-$ pwd     
+$ pwd
 /var/log/cups
 ```
-## Listing out the aliases
-``` sh
-$ j 
-```
-You will get this output:
 
-``` sh
+### :bar_chart: Listing out the aliases
+
+```sh
+$ j
+```
+
+Output:
+
+```
     cu   /var/log/cups
     apt  /etc/apt/sources.list.d
 ```
-If your working directory has a known alias it will be preceded with a plus `+` sign
- and its alias will be green.
-## Renaming aliases
-``` sh
+
+If your current working directory has a known alias, it will be preceded by a `+` sign and highlighted in green.
+
+### :pencil2: Renaming aliases
+
+```sh
 $ j -r cu cps
 $ j cps
 $ pwd
 /var/log/cups
 ```
-## Deleting an alias
-``` sh
+
+### :wastebasket: Deleting an alias
+
+```sh
 $ j -d cps
 ```
-And 'cps' is forgotten forever. :(
 
-## Using the directory in a regular command
-``` sh
-$ ls $(j -g apt) # listing /etc/apt/sources.list.d
+And `cps` is forgotten forever. :cry:
+
+### :hammer_and_wrench: Using the directory in a regular command
+
+The `-g` flag returns the path for a given alias, making it easy to use in subshells:
+
+```sh
+$ ls $(j -g apt)                                     # list /etc/apt/sources.list.d
 $ cat $(j -g apt)/official-package-repositories.list
 ```
 
-## Living on the edge
-The script can automatically upgrade and downgrade itself using the `-u` and `-w` 
-options respectively. For upgrades you have to have (of course) a stable internet 
-connection and `wget`.
+### :fire: Living on the edge
 
-### Upgrading
-``` sh
+dirjumper can upgrade and downgrade itself using the `-u` and `-w` options. Upgrading requires an internet connection and `wget`.
+
+**Upgrading:**
+```sh
 $ j -u
 [+] Checking for new version (current is v0.4.0)...
 [+] New version (v10.5.0) found...
 [?] Do you want to upgrade? [y/N]: y
     ...
 ```
-### Downgrading (revoking upgrades)
-``` sh
+
+**Downgrading (revoking an upgrade):**
+```sh
 $ j -w
 [+] Sucessfully downgraded from '0.2.0' to '0.1.1'.
 ```
 
-# What is installed?
-By default, the script copies itself to the `$HOME/.config/.dirjumper`. The `.dirjumper`
-directory contains the script and the `dj.list` file 
-where the aliases are assigned. *These are not to be confused with shell aliases, which are a built-in way for aliasing commands.*
+---
 
-The script also appends some code to the `.bashrc`. Some distributions might rewrite
-this rc script. The appended snippet usually looks like this:
+## :open_file_folder: What is installed?
+
+The installer places the script in `$HOME/.config/.dirjumper/`, along with a `dj.list` file where your aliases are stored.
+
+> :warning: These are **not** shell aliases — they are dirjumper's own alias list, stored in `dj.list`.
+
+The installer also appends a small snippet to your `.bashrc`:
+
 ```sh
 # <dirjumper>
 source /home/akos/.config/.dirjumper/dj.sh
 # </dirjumper>
 ```
-The dirjumper "tags" are used as separators, so later versions
-could safely modify its inner contents.
 
-# Configuration
-You have some limited configuration options in the current version of
-`dirjumper`.
+The `<dirjumper>` tags act as markers so future versions can safely update the snippet without breaking your config.
 
-These could be set from your `.bashrc` file, practically between
-the aformentioned "tags". This is not required though and a later
-version could potentially overwrite your settings so be awera of that.
+---
 
-`$DIRJUMPER_ALIAS` is provided to set the alias used to interface
-with the script. By default this is `j` for jump.
+## :gear: Configuration
+
+The following environment variables can be set in your `.bashrc`, inside the dirjumper tags. Be aware that upgrading dirjumper may overwrite custom values placed there.
+
+### `DIRJUMPER_ALIAS`
+
+Changes the command used to invoke dirjumper. Default is `j`.
 
 ```sh
 # <dirjumper>
-export $DIRJUMPER_ALIAS="go" # go <alias> could be used
+export DIRJUMPER_ALIAS="go"   # use "go <alias>" instead of "j <alias>"
 source /home/akos/.config/.dirjumper/dj.sh
 # </dirjumper>
 ```
 
-`$DIRJUMPER_COLOR` could be set to 0 in order to disable output coloring. The default value is `''` (empty string). **As of now any
-other value will disable output coloring.**
+### `DIRJUMPER_COLOR`
+
+Set to `0` to disable colored output. Any non-empty value other than `0` also disables colors.
 
 ```sh
 # <dirjumper>
-export $DIRJUMPER_COLOR=0 # disable colors
+export DIRJUMPER_COLOR=0      # disable colors
 source /home/akos/.config/.dirjumper/dj.sh
 # </dirjumper>
 ```
+
+---
+
+## :blue_book: Quick reference
+
+| Command | Description |
+|---|---|
+| `j <alias>` | Jump to the directory for `<alias>` |
+| `j` | List all aliases |
+| `j -a <alias>` | Bookmark the current directory as `<alias>` |
+| `j -a <alias> <path>` | Bookmark `<path>` as `<alias>` |
+| `j -r <old> <new>` | Rename an alias |
+| `j -d <alias>` | Delete an alias |
+| `j -g <alias>` | Print the path for `<alias>` (for use in scripts) |
+| `j -u` | Upgrade to the latest version |
+| `j -w` | Downgrade to the previous version |
