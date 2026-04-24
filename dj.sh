@@ -62,7 +62,7 @@ DJPATH="$HOME/$CONFDIR/$DJDIR"
 DJLIST="$DJPATH/$DJFILE"
 DJBIN="$DJPATH/$DJEXE"
 
-VERSION="1.0.0"
+VERSION="2.0.0"
 
 function dirjumper () {
     ## Stable, main update server
