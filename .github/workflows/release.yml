@@ -52,29 +52,28 @@ jobs:
             exit 1
           fi
 
-      - name: Commit and push
+      - name: Push to release branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add VERSION dj.sh
           git commit -m "Bump version to v${{ steps.bump.outputs.new_version }}"
-          git push origin upstream
+          git push origin HEAD:refs/heads/release/v${{ steps.bump.outputs.new_version }}
 
-      - name: Create PR to master
+      - name: Open PR to upstream
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NEW_VERSION: ${{ steps.bump.outputs.new_version }}
           OLD_VERSION: ${{ steps.bump.outputs.old_version }}
           BUMP_TYPE: ${{ inputs.bump }}
         run: |
-          BODY="## Release v${NEW_VERSION}
-
+          gh pr create \
+            --base upstream \
+            --head "release/v${NEW_VERSION}" \
+            --title "Bump version to v${NEW_VERSION}" \
+            --body "$(cat <<EOF
           Bumped from v${OLD_VERSION} → v${NEW_VERSION} (${BUMP_TYPE}).
 
-          Merging this PR will automatically create a GitHub release with tag \`v${NEW_VERSION}\`."
-
-          gh pr create \
-            --base master \
-            --head upstream \
-            --title "Release v${NEW_VERSION}" \
-            --body "$BODY"
+          After this is merged, open a PR from \`upstream\` → \`master\` to cut the release.
+          EOF
+          )"
