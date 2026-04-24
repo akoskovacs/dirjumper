@@ -31,6 +31,30 @@ assert_contains() {
     fi
 }
 
+# ── Helpers ────────────────────────────────────────────────────────
+
+# Reset HOME to a clean state between sub-tests
+reset_home() {
+    rm -rf "$HOME"
+    export HOME=$(mktemp -d)
+}
+
+# Run the README install flow from a temp download dir, then remove the script.
+# Usage: readme_install <download_cmd>
+#   download_cmd must write dj.sh into the current directory.
+readme_install() {
+    local download_cmd="$1"
+    local dl_dir
+    dl_dir=$(mktemp -d)
+    (
+        cd "$dl_dir"
+        eval "$download_cmd" 2>/dev/null
+        bash dj.sh install > /dev/null 2>&1
+        rm dj.sh
+    )
+    rm -rf "$dl_dir"
+}
+
 # ── Setup ──────────────────────────────────────────────────────────
 ORIG_HOME="$HOME"
 export HOME=$(mktemp -d)
@@ -39,12 +63,14 @@ SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 DJ_SH="$SCRIPT_DIR/dj.sh"
 
 cleanup() {
+    # Stop the HTTP server if it was started
+    [[ -n "$SERVER_PID" ]] && kill "$SERVER_PID" 2>/dev/null
     rm -rf "$HOME"
     export HOME="$ORIG_HOME"
 }
 trap cleanup EXIT
 
-# ── Tests ──────────────────────────────────────────────────────────
+# ── Tests: direct install ──────────────────────────────────────────
 
 echo "=== Install: creates directory structure ==="
 bash "$DJ_SH" install > /dev/null 2>&1
@@ -68,6 +94,50 @@ echo "=== Install: idempotent (running twice does not duplicate .bashrc snippet)
 bash "$DJ_SH" install > /dev/null 2>&1
 count=$(grep -c '# <dirjumper>' "$HOME/.bashrc")
 assert_eq "bashrc tag appears only once" "1" "$count"
+
+# ── Tests: README flow (download → install → rm) ───────────────────
+#
+# Spin up a local HTTP server serving the repo root so wget/curl fetch
+# the local dj.sh rather than hitting GitHub, keeping the tests offline
+# and always testing the current working copy.
+
+SERVER_PORT=17351
+python3 -m http.server "$SERVER_PORT" --directory "$SCRIPT_DIR" > /dev/null 2>&1 &
+SERVER_PID=$!
+# Wait briefly for the server to be ready
+for i in $(seq 1 10); do
+    curl -sf "http://localhost:$SERVER_PORT/dj.sh" > /dev/null 2>&1 && break
+    sleep 0.2
+done
+
+echo "=== README flow (curl): download, install, rm ==="
+reset_home
+readme_install "curl -sSL http://localhost:$SERVER_PORT/dj.sh > dj.sh"
+assert_eq "curl: install dir exists" "0" "$([ -d "$HOME/.config/.dirjumper" ] && echo 0 || echo 1)"
+assert_eq "curl: dj.sh installed"    "0" "$([ -f "$HOME/.config/.dirjumper/dj.sh" ] && echo 0 || echo 1)"
+assert_eq "curl: dj.list created"    "0" "$([ -f "$HOME/.config/.dirjumper/dj.list" ] && echo 0 || echo 1)"
+assert_contains "curl: bashrc configured" "# <dirjumper>" "$(cat "$HOME/.bashrc" 2>/dev/null)"
+
+echo "=== README flow (wget): download, install, rm ==="
+if command -v wget > /dev/null 2>&1; then
+    reset_home
+    readme_install "wget -q http://localhost:$SERVER_PORT/dj.sh"
+    assert_eq "wget: install dir exists" "0" "$([ -d "$HOME/.config/.dirjumper" ] && echo 0 || echo 1)"
+    assert_eq "wget: dj.sh installed"    "0" "$([ -f "$HOME/.config/.dirjumper/dj.sh" ] && echo 0 || echo 1)"
+    assert_eq "wget: dj.list created"    "0" "$([ -f "$HOME/.config/.dirjumper/dj.list" ] && echo 0 || echo 1)"
+    assert_contains "wget: bashrc configured" "# <dirjumper>" "$(cat "$HOME/.bashrc" 2>/dev/null)"
+else
+    echo "  SKIP: wget not available on this system"
+fi
+
+echo "=== README flow: installed script works after downloaded copy is removed ==="
+reset_home
+readme_install "curl -sSL http://localhost:$SERVER_PORT/dj.sh > dj.sh"
+export DIRJUMPER_COLOR=0
+source "$HOME/.config/.dirjumper/dj.sh"
+out=$(dirjumper -v 2>&1)
+assert_contains "post-rm: installed script reports version" \
+    "$(cat "$SCRIPT_DIR/VERSION" | tr -d '[:space:]')" "$out"
 
 # ── Summary ────────────────────────────────────────────────────────
 echo
