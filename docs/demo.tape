@@ -1,4 +1,5 @@
 Output docs/demo.mp4
+Output docs/demo.gif
 
 Set Theme "Dracula"
 Set FontSize 15

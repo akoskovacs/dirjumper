@@ -2,7 +2,7 @@
 
 Tired of typing long paths or hunting through `cd` history? **dirjumper** lets you bookmark any directory with a short alias and jump to it instantly from anywhere.
 
-<video src="docs/demo.mp4" autoplay loop muted playsinline></video>
+![dirjumper demo](docs/demo.gif)
 
 > The `upstream` branch contains the currently developed version, while the `master` branch holds the stable release.
 
