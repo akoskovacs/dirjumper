@@ -23,3 +23,6 @@ jobs:
 
       - name: Run tests
         run: ${{ matrix.shell }} tests/test_dj.sh
+
+      - name: Run install tests
+        run: ${{ matrix.shell }} tests/test_install.sh
