@@ -31,6 +31,15 @@ assert_contains() {
     fi
 }
 
+assert_not_contains() {
+    local label="$1" needle="$2" haystack="$3"
+    if [[ "$haystack" != *"$needle"* ]]; then
+        pass "$label"
+    else
+        fail "$label (expected NOT to contain '$needle', got '$haystack')"
+    fi
+}
+
 # Resolve symlinks for path comparisons (macOS /tmp -> /private/tmp)
 real_pwd() {
     pwd -P
@@ -66,13 +75,17 @@ assert_eq "version flag matches VERSION file" \
     "$(echo "$ver" | tr -d '[:space:]')"
 
 echo "=== Add alias (explicit directory) ==="
-dirjumper -a proj "$TMPDIR_A" 2>/dev/null
+out=$(dirjumper -a proj "$TMPDIR_A" 2>&1)
+assert_not_contains "add alias (explicit dir) - no errors" "Invalid" "$out"
+assert_not_contains "add alias (explicit dir) - no errors" "Error" "$out"
+assert_eq "cwd unchanged after add with path" "$SCRIPT_DIR" "$(real_pwd)"
 out=$(dirjumper -g proj)
 assert_eq "get alias returns correct path" "$TMPDIR_A" "$out"
 
 echo "=== Add alias (current directory) ==="
 cd "$TMPDIR_B"
-dirjumper -a work
+out=$(dirjumper -a work 2>&1)
+assert_not_contains "add alias (cwd) - no errors" "Invalid" "$out"
 out=$(dirjumper -g work)
 assert_eq "get alias from cwd" "$TMPDIR_B" "$out"
 
@@ -87,7 +100,9 @@ assert_contains "list shows proj" "proj" "$out"
 assert_contains "list shows work" "work" "$out"
 
 echo "=== Rename alias ==="
-dirjumper -r proj project 2>/dev/null
+out=$(dirjumper -r proj project 2>&1)
+assert_not_contains "rename - no errors" "Invalid" "$out"
+assert_eq "cwd unchanged after rename" "$TMPDIR_A" "$(real_pwd)"
 out=$(dirjumper -g project)
 assert_eq "renamed alias resolves" "$TMPDIR_A" "$out"
 out=$(dirjumper -g proj 2>/dev/null || true)
@@ -123,7 +138,8 @@ out=$(dirjumper)
 assert_contains "no-arg shows existing alias" "project" "$out"
 
 echo "=== Prefix collision ==="
-dirjumper -a pro "$TMPDIR_B" 2>/dev/null
+out=$(dirjumper -a pro "$TMPDIR_B" 2>&1)
+assert_not_contains "add shorter alias - no errors" "Invalid" "$out"
 out_pro=$(dirjumper -g pro)
 out_project=$(dirjumper -g project)
 assert_eq "shorter alias resolves correctly" "$TMPDIR_B" "$out_pro"
