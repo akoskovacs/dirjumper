@@ -46,8 +46,11 @@ if [[ $DIRJUMPER_COLOR = '' ]]; then
     COLOR_END="\x1b[0m"
 fi
 
-## Shell init file
-SH_RC_FILE=".bashrc"
+## Shell init file - detect based on user's default shell
+case "$SHELL" in
+    */zsh) SH_RC_FILE=".zshrc" ;;
+    *)     SH_RC_FILE=".bashrc" ;;
+esac
 ## Home configuration directory under ~
 CONFDIR=".config"
 
