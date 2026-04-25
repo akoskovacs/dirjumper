@@ -146,6 +146,13 @@ assert_eq "shorter alias resolves correctly" "$TMPDIR_B" "$out_pro"
 assert_eq "longer alias still resolves" "$TMPDIR_A" "$out_project"
 dirjumper -d pro
 
+echo "=== Add alias for root-level directory (no double slash) ==="
+out=$(dirjumper -a rootdev /dev 2>&1)
+assert_not_contains "add root-level dir - no errors" "Invalid" "$out"
+out=$(dirjumper -g rootdev)
+assert_eq "root-level dir stored without double slash" "/dev" "$out"
+dirjumper -d rootdev
+
 echo "=== Nonexistent alias ==="
 out=$(dirjumper -g nonexistent 2>/dev/null || true)
 assert_eq "nonexistent alias returns empty" "" "$out"

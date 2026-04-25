@@ -114,7 +114,9 @@ function dirjumper () {
             cd "$(dirname "$link")"
             link=$(readlink "$(basename "$1")")
         done
-        own_realpath="$PWD/$(basename "$1")"
+        # Fix issues with leading '/'
+        local parent="${PWD%/}"
+        own_realpath="$parent/$(basename "$1")"
         cd "$ourpwd"
         echo "$own_realpath"
     }
