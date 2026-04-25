@@ -230,6 +230,13 @@ function dirjumper () {
             return 1
         fi
 
+        local existing=`find_alias $2`
+        if [[ $existing != "" ]]; then
+            echo -en $COLOR_RED
+            echo "Alias '$2' already exists!"
+            echo -en $COLOR_END
+            return 1
+        fi
         local oname=`get_alias $1`
         if [[ $oname != "" ]]; then
             local tmpf=$(mktemp)
