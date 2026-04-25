@@ -108,6 +108,14 @@ assert_eq "renamed alias resolves" "$TMPDIR_A" "$out"
 out=$(dirjumper -g proj 2>/dev/null || true)
 assert_eq "old name gone after rename" "" "$out"
 
+echo "=== Rename to existing alias rejected ==="
+dirjumper -a work2 "$TMPDIR_B" 2>/dev/null
+out=$(dirjumper -r project work2 2>&1)
+assert_contains "rename to existing alias shows error" "already exists" "$out"
+out=$(dirjumper -g project)
+assert_eq "original alias unchanged after failed rename" "$TMPDIR_A" "$out"
+dirjumper -d work2
+
 echo "=== Delete alias ==="
 dirjumper -d work
 out=$(dirjumper -g work 2>/dev/null || true)
