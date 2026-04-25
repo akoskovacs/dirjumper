@@ -40,16 +40,18 @@ reset_home() {
 }
 
 # Run the README install flow from a temp download dir, then remove the script.
-# Usage: readme_install <download_cmd>
+# Usage: download_and_install <download_cmd> [shell_path]
 #   download_cmd must write dj.sh into the current directory.
-readme_install() {
+#   shell_path overrides $SHELL during install (default: /bin/bash)
+download_and_install() {
     local download_cmd="$1"
+    local install_shell="${2:-/bin/bash}"
     local dl_dir
     dl_dir=$(mktemp -d)
     (
         cd "$dl_dir"
         eval "$download_cmd" 2>/dev/null
-        bash dj.sh install > /dev/null 2>&1
+        SHELL="$install_shell" bash dj.sh install > /dev/null 2>&1
         rm dj.sh
     )
     rm -rf "$dl_dir"
@@ -70,30 +72,55 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# ── Tests: direct install ──────────────────────────────────────────
+# ── Tests: direct install (bash) ──────────────────────────────────
 
-echo "=== Install: creates directory structure ==="
-bash "$DJ_SH" install > /dev/null 2>&1
+echo "=== Install (bash): creates directory structure ==="
+SHELL=/bin/bash bash "$DJ_SH" install > /dev/null 2>&1
 assert_eq "install dir exists"  "0" "$([ -d "$HOME/.config/.dirjumper" ] && echo 0 || echo 1)"
 assert_eq "dj.sh copied"        "0" "$([ -f "$HOME/.config/.dirjumper/dj.sh" ] && echo 0 || echo 1)"
 assert_eq "dj.list created"     "0" "$([ -f "$HOME/.config/.dirjumper/dj.list" ] && echo 0 || echo 1)"
 
-echo "=== Install: appends source snippet to .bashrc ==="
+echo "=== Install (bash): appends source snippet to .bashrc ==="
 assert_eq ".bashrc created"     "0" "$([ -f "$HOME/.bashrc" ] && echo 0 || echo 1)"
 assert_contains "bashrc has opening tag"  "# <dirjumper>"  "$(cat "$HOME/.bashrc")"
 assert_contains "bashrc has closing tag"  "# </dirjumper>" "$(cat "$HOME/.bashrc")"
 assert_contains "bashrc sources dj.sh"    'source "'       "$(cat "$HOME/.bashrc")"
+
+echo "=== Install (bash): idempotent (running twice does not duplicate .bashrc snippet) ==="
+SHELL=/bin/bash bash "$DJ_SH" install > /dev/null 2>&1
+count=$(grep -c '# <dirjumper>' "$HOME/.bashrc")
+assert_eq "bashrc tag appears only once" "1" "$count"
+
+# ── Tests: direct install (zsh) ──────────────────────────────────
+
+echo "=== Install (zsh): creates directory structure ==="
+reset_home
+SHELL=/bin/zsh bash "$DJ_SH" install > /dev/null 2>&1
+assert_eq "install dir exists"  "0" "$([ -d "$HOME/.config/.dirjumper" ] && echo 0 || echo 1)"
+assert_eq "dj.sh copied"        "0" "$([ -f "$HOME/.config/.dirjumper/dj.sh" ] && echo 0 || echo 1)"
+assert_eq "dj.list created"     "0" "$([ -f "$HOME/.config/.dirjumper/dj.list" ] && echo 0 || echo 1)"
+
+echo "=== Install (zsh): appends source snippet to .zshrc ==="
+assert_eq ".zshrc created"      "0" "$([ -f "$HOME/.zshrc" ] && echo 0 || echo 1)"
+assert_contains "zshrc has opening tag"  "# <dirjumper>"  "$(cat "$HOME/.zshrc")"
+assert_contains "zshrc has closing tag"  "# </dirjumper>" "$(cat "$HOME/.zshrc")"
+assert_contains "zshrc sources dj.sh"    'source "'       "$(cat "$HOME/.zshrc")"
+
+echo "=== Install (zsh): does not modify .bashrc ==="
+assert_eq ".bashrc not created" "1" "$([ -f "$HOME/.bashrc" ] && echo 0 || echo 1)"
+
+echo "=== Install (zsh): idempotent (running twice does not duplicate .zshrc snippet) ==="
+SHELL=/bin/zsh bash "$DJ_SH" install > /dev/null 2>&1
+count=$(grep -c '# <dirjumper>' "$HOME/.zshrc")
+assert_eq "zshrc tag appears only once" "1" "$count"
+
+# ── Tests: installed script is functional ─────────────────────────
 
 echo "=== Install: installed script is functional ==="
 export DIRJUMPER_COLOR=0
 source "$HOME/.config/.dirjumper/dj.sh"
 out=$(dirjumper -v 2>&1)
 assert_contains "installed script reports version" "$(cat "$SCRIPT_DIR/VERSION" | tr -d '[:space:]')" "$out"
-
-echo "=== Install: idempotent (running twice does not duplicate .bashrc snippet) ==="
-bash "$DJ_SH" install > /dev/null 2>&1
-count=$(grep -c '# <dirjumper>' "$HOME/.bashrc")
-assert_eq "bashrc tag appears only once" "1" "$count"
 
 # ── Tests: README flow (download → install → rm) ───────────────────
 #
@@ -110,29 +137,37 @@ for i in $(seq 1 10); do
     sleep 0.2
 done
 
-echo "=== README flow (curl): download, install, rm ==="
+echo "=== README flow (curl, bash): download, install, rm ==="
 reset_home
-readme_install "curl -sSL http://localhost:$SERVER_PORT/dj.sh > dj.sh"
-assert_eq "curl: install dir exists" "0" "$([ -d "$HOME/.config/.dirjumper" ] && echo 0 || echo 1)"
-assert_eq "curl: dj.sh installed"    "0" "$([ -f "$HOME/.config/.dirjumper/dj.sh" ] && echo 0 || echo 1)"
-assert_eq "curl: dj.list created"    "0" "$([ -f "$HOME/.config/.dirjumper/dj.list" ] && echo 0 || echo 1)"
-assert_contains "curl: bashrc configured" "# <dirjumper>" "$(cat "$HOME/.bashrc" 2>/dev/null)"
+download_and_install "curl -sSL http://localhost:$SERVER_PORT/dj.sh > dj.sh" /bin/bash
+assert_eq "curl bash: install dir exists" "0" "$([ -d "$HOME/.config/.dirjumper" ] && echo 0 || echo 1)"
+assert_eq "curl bash: dj.sh installed"    "0" "$([ -f "$HOME/.config/.dirjumper/dj.sh" ] && echo 0 || echo 1)"
+assert_eq "curl bash: dj.list created"    "0" "$([ -f "$HOME/.config/.dirjumper/dj.list" ] && echo 0 || echo 1)"
+assert_contains "curl bash: bashrc configured" "# <dirjumper>" "$(cat "$HOME/.bashrc" 2>/dev/null)"
 
-echo "=== README flow (wget): download, install, rm ==="
+echo "=== README flow (curl, zsh): download, install, rm ==="
+reset_home
+download_and_install "curl -sSL http://localhost:$SERVER_PORT/dj.sh > dj.sh" /bin/zsh
+assert_eq "curl zsh: install dir exists" "0" "$([ -d "$HOME/.config/.dirjumper" ] && echo 0 || echo 1)"
+assert_eq "curl zsh: dj.sh installed"    "0" "$([ -f "$HOME/.config/.dirjumper/dj.sh" ] && echo 0 || echo 1)"
+assert_eq "curl zsh: dj.list created"    "0" "$([ -f "$HOME/.config/.dirjumper/dj.list" ] && echo 0 || echo 1)"
+assert_contains "curl zsh: zshrc configured" "# <dirjumper>" "$(cat "$HOME/.zshrc" 2>/dev/null)"
+
+echo "=== README flow (wget, bash): download, install, rm ==="
 if command -v wget > /dev/null 2>&1; then
     reset_home
-    readme_install "wget -q http://localhost:$SERVER_PORT/dj.sh"
-    assert_eq "wget: install dir exists" "0" "$([ -d "$HOME/.config/.dirjumper" ] && echo 0 || echo 1)"
-    assert_eq "wget: dj.sh installed"    "0" "$([ -f "$HOME/.config/.dirjumper/dj.sh" ] && echo 0 || echo 1)"
-    assert_eq "wget: dj.list created"    "0" "$([ -f "$HOME/.config/.dirjumper/dj.list" ] && echo 0 || echo 1)"
-    assert_contains "wget: bashrc configured" "# <dirjumper>" "$(cat "$HOME/.bashrc" 2>/dev/null)"
+    download_and_install "wget -q http://localhost:$SERVER_PORT/dj.sh" /bin/bash
+    assert_eq "wget bash: install dir exists" "0" "$([ -d "$HOME/.config/.dirjumper" ] && echo 0 || echo 1)"
+    assert_eq "wget bash: dj.sh installed"    "0" "$([ -f "$HOME/.config/.dirjumper/dj.sh" ] && echo 0 || echo 1)"
+    assert_eq "wget bash: dj.list created"    "0" "$([ -f "$HOME/.config/.dirjumper/dj.list" ] && echo 0 || echo 1)"
+    assert_contains "wget bash: bashrc configured" "# <dirjumper>" "$(cat "$HOME/.bashrc" 2>/dev/null)"
 else
     echo "  SKIP: wget not available on this system"
 fi
 
 echo "=== README flow: installed script works after downloaded copy is removed ==="
 reset_home
-readme_install "curl -sSL http://localhost:$SERVER_PORT/dj.sh > dj.sh"
+download_and_install "curl -sSL http://localhost:$SERVER_PORT/dj.sh > dj.sh" /bin/bash
 export DIRJUMPER_COLOR=0
 source "$HOME/.config/.dirjumper/dj.sh"
 out=$(dirjumper -v 2>&1)
