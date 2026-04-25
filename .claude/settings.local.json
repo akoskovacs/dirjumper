@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash tests/test_install.sh)",
+      "Bash(zsh tests/test_install.sh)"
+    ]
+  }
+}
