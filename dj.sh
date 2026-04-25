@@ -62,7 +62,7 @@ DJPATH="$HOME/$CONFDIR/$DJDIR"
 DJLIST="$DJPATH/$DJFILE"
 DJBIN="$DJPATH/$DJEXE"
 
-VERSION="2.0.2"
+VERSION="2.0.3"
 
 function dirjumper () {
     ## Stable, main update server
@@ -114,7 +114,9 @@ function dirjumper () {
             cd "$(dirname "$link")"
             link=$(readlink "$(basename "$1")")
         done
-        own_realpath="$PWD/$(basename "$1")"
+        # Fix issues with leading '/'
+        local parent="${PWD%/}"
+        own_realpath="$parent/$(basename "$1")"
         cd "$ourpwd"
         echo "$own_realpath"
     }
@@ -228,6 +230,13 @@ function dirjumper () {
             return 1
         fi
 
+        local existing=`find_alias $2`
+        if [[ $existing != "" ]]; then
+            echo -en $COLOR_RED
+            echo "Alias '$2' already exists!"
+            echo -en $COLOR_END
+            return 1
+        fi
         local oname=`get_alias $1`
         if [[ $oname != "" ]]; then
             local tmpf=$(mktemp)
