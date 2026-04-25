@@ -46,7 +46,7 @@ if [[ $DIRJUMPER_COLOR = '' ]]; then
     COLOR_END="\x1b[0m"
 fi
 
-## Shell init file
+## Shell init file (default; overridden at install time by shell detection)
 SH_RC_FILE=".bashrc"
 ## Home configuration directory under ~
 CONFDIR=".config"
@@ -62,7 +62,7 @@ DJPATH="$HOME/$CONFDIR/$DJDIR"
 DJLIST="$DJPATH/$DJFILE"
 DJBIN="$DJPATH/$DJEXE"
 
-VERSION="2.0.3"
+VERSION="2.1.0"
 
 function dirjumper () {
     ## Stable, main update server
@@ -399,6 +399,22 @@ function dirjumper () {
 
 ## Creates the alias list and appends the init script after downloading
 install_dirjumper () {
+    # Detect the shell that invoked this install by inspecting the parent process.
+    # This works correctly even when users run "bash dj.sh install" from a zsh terminal,
+    # since $PPID points to the calling shell regardless of which shell runs this script.
+    local _caller
+    _caller=$(ps -p "$PPID" -o comm= 2>/dev/null)
+    _caller="${_caller##*/}"   # strip path prefix
+    _caller="${_caller#-}"    # strip leading - from login shells (e.g. -zsh)
+    case "$_caller" in
+        zsh)  SH_RC_FILE=".zshrc" ;;
+        bash) SH_RC_FILE=".bashrc" ;;
+        *)    # fall back to $SHELL when parent is not a recognised shell
+              case "$SHELL" in
+                  */zsh) SH_RC_FILE=".zshrc" ;;
+                  *)     SH_RC_FILE=".bashrc" ;;
+              esac ;;
+    esac
     echo "[+] Creating installation directory '$DJPATH'..."
     mkdir -p "$DJPATH"
     echo "[+] Installing '$DJBIN'..."
